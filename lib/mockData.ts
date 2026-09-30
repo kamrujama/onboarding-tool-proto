@@ -181,6 +181,62 @@ export const mockCanvasNodes: CanvasNode[] = [
   { id: 'node-10', type: 'milestone', title: 'ONBOARDED',         subtitle: 'Candidate fully onboarded',           x: 940, y: 300, status: 'pending',  sla: 'Day 1',   owner: 'All' },
 ];
 
+// ── New Case Wizard — Quick-add reference data ────────────────────────────────
+export interface PersonOption {
+  id: string;
+  name: string;
+  email: string;
+  kind?: string;
+}
+
+export interface ProjectOption {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface VgManagerOption {
+  id: string;
+  name: string;
+  email: string;
+  org: string;
+  dept: string;
+  role: string;
+  synced: boolean;
+}
+
+export const mockEpamPeople: PersonOption[] = [
+  { id: 'person-quinn',  name: 'Quinn Fitzgerald', email: 'quinn.fitzgerald@epam.com', kind: 'EPAM Internal' },
+  { id: 'person-jordan', name: 'Jordan Ellis',      email: 'jordan.ellis@epam.com',    kind: 'EPAM Internal' },
+  { id: 'person-morgan', name: 'Morgan Blake',       email: 'morgan.blake@epam.com',    kind: 'EPAM External' },
+];
+
+export const mockLocationOptions: string[] = [
+  'Malvern, PA (On-site)', 'Remote US (Nationwide)', 'Charlotte Hub, NC',
+  'Dallas Branch, TX', 'Scottsdale Tech, AZ',
+];
+
+export const mockProjectOptions: ProjectOption[] = [
+  { id: 'project-van-demo', code: 'VAN-DEMO', name: 'Vanguard Demo Container' },
+  { id: 'project-van-core', code: 'VAN-CORE', name: 'Vanguard Wealth Core' },
+];
+
+export const mockDeliveryManagers: PersonOption[] = [
+  { id: 'dm-dave',  name: 'Dave Example', email: 'dave.example@epam.com' },
+  { id: 'dm-sarah', name: 'Sarah Chen',   email: 'sarah.chen@epam.com' },
+  { id: 'dm-james', name: 'James Park',   email: 'james.park@epam.com' },
+];
+
+export const mockIopsOwners: PersonOption[] = [
+  { id: 'iops-frank', name: 'Frank Osei',  email: 'frank.osei@epam.com' },
+  { id: 'iops-lisa',  name: 'Lisa Torres', email: 'lisa.torres@epam.com' },
+];
+
+export const mockVgManagers: VgManagerOption[] = [
+  { id: 'vg-ansari', name: 'Ansari Kamrujama', email: 'kamrujama_ansari@epam.com', org: 'Vanguard Wealth Core', dept: 'Client Delivery Unit', role: 'Primary Contact',   synced: true },
+  { id: 'vg-priya',  name: 'Priya Shah',       email: 'priya.shah@epam.com',       org: 'Vanguard Retail',      dept: 'Ops Delivery Unit',    role: 'Secondary Contact', synced: true },
+];
+
 // ── Dashboard Stats ───────────────────────────────────────────────────────────
 export const dashboardStats = {
   total: 42,

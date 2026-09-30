@@ -25,18 +25,16 @@ export type ModalView =
 
 export interface NewCaseForm {
   // Step 1 — Identity
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  jobTitle: string;
-  department: string;
-  employeeType: string;
-  // Step 2 — Workflow
-  profileId: string;
+  epamPersonId: string;
   location: string;
-  manager: string;
-  startDate: string;
+  projectId: string;
+  dmId: string;
+  iopsOwnerId: string;
+  expectedStart: string;
+  // Step 2 — Workflow
+  vgManagerId: string;
+  jobCode: string;
+  profileId: string;
   // Step 3 — Review (read-only)
 }
 
@@ -90,10 +88,8 @@ const drawerSteps: DrawerView[] = [
 ];
 
 const defaultNewCaseForm: NewCaseForm = {
-  firstName: '', lastName: '', email: '', phone: '',
-  jobTitle: '', department: '', employeeType: 'FTE',
-  profileId: 'profile-001', location: 'Malvern (On-site)',
-  manager: '', startDate: '',
+  epamPersonId: '', location: '', projectId: '', dmId: '', iopsOwnerId: '',
+  expectedStart: '', vgManagerId: '', jobCode: '', profileId: 'profile-001',
 };
 
 const defaultProfileForm: ProfileForm = {

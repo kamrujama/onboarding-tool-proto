@@ -1,14 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import { useApp, NewCaseForm } from '@/lib/appContext';
-import { mockProfiles } from '@/lib/mockData';
+import {
+  mockProfiles,
+  mockEpamPeople, mockLocationOptions, mockProjectOptions,
+  mockDeliveryManagers, mockIopsOwners, mockVgManagers,
+  PersonOption, ProjectOption, VgManagerOption,
+} from '@/lib/mockData';
 
 // ── Step Progress Indicator ────────────────────────────────────────────────────
 function StepIndicator({ step }: { step: number }) {
   const steps = [
-    { label: 'Identity',  num: 1 },
-    { label: 'Workflow',  num: 2 },
-    { label: 'Review',    num: 3 },
+    { label: 'Identity', num: 1 },
+    { label: 'Workflow', num: 2 },
+    { label: 'Review',   num: 3 },
   ];
 
   return (
@@ -44,170 +50,406 @@ function StepIndicator({ step }: { step: number }) {
   );
 }
 
-// ── Field Wrapper ─────────────────────────────────────────────────────────────
-function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+// ── Field Wrapper (plain, non-select fields) ──────────────────────────────────
+function Field({ label, children, required, helper }: { label: string; children: React.ReactNode; required?: boolean; helper?: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
         {label}{required && <span style={{ color: '#F87171', marginLeft: 3 }}>*</span>}
       </label>
       {children}
+      {helper && <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{helper}</span>}
     </div>
   );
 }
 
-// ── Step 1: Identity ──────────────────────────────────────────────────────────
-function Step1({ form, update }: { form: NewCaseForm; update: (p: Partial<NewCaseForm>) => void }) {
+// ── Quick-add select field: dropdown + inline "+ New X" create form ──────────
+function QuickAddField({
+  label, required, helper, value, onChange, options, placeholder, addLabel, onAdd,
+}: {
+  label: string;
+  required?: boolean;
+  helper?: string;
+  value: string;
+  onChange: (id: string) => void;
+  options: { id: string; label: string }[];
+  placeholder: string;
+  addLabel: string;
+  onAdd: (name: string) => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+
+  const submit = () => {
+    const name = draft.trim();
+    if (!name) return;
+    onAdd(name);
+    setDraft('');
+    setAdding(false);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)' }}>
-        <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-          Enter the candidate&apos;s personal details. These will be used to initialize their onboarding record.
-        </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
+          {label}{required && <span style={{ color: '#F87171', marginLeft: 3 }}>*</span>}
+        </label>
+        <button
+          type="button"
+          className="btn-ghost btn-sm"
+          style={{ height: 26, padding: '0 10px', fontSize: 11, color: 'var(--primary-fixed)' }}
+          onClick={() => setAdding(a => !a)}
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          {addLabel}
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <Field label="First Name" required>
-          <input className="input-base" value={form.firstName} onChange={e => update({ firstName: e.target.value })} placeholder="e.g. Jordan" />
-        </Field>
-        <Field label="Last Name" required>
-          <input className="input-base" value={form.lastName} onChange={e => update({ lastName: e.target.value })} placeholder="e.g. Smith" />
-        </Field>
-      </div>
+      {adding ? (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            className="input-base"
+            autoFocus
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') submit();
+              if (e.key === 'Escape') { setAdding(false); setDraft(''); }
+            }}
+            placeholder={`${addLabel.replace('+ New ', '')} name…`}
+          />
+          <button type="button" className="btn-primary btn-sm" style={{ flexShrink: 0 }} onClick={submit}>Add</button>
+          <button type="button" className="btn-ghost btn-sm" style={{ flexShrink: 0 }} onClick={() => { setAdding(false); setDraft(''); }}>Cancel</button>
+        </div>
+      ) : (
+        <select className="input-base" value={value} onChange={e => onChange(e.target.value)}>
+          <option value="">{placeholder}</option>
+          {options.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
+      )}
 
-      <Field label="Work Email" required>
-        <input className="input-base" type="email" value={form.email} onChange={e => update({ email: e.target.value })} placeholder="jordan.smith@epam.com" />
+      {helper && <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{helper}</span>}
+    </div>
+  );
+}
+
+const slug = (s: string) => s.toLowerCase().trim().replace(/\s+/g, '.');
+
+// ── Step 1: Identity ──────────────────────────────────────────────────────────
+function Step1({
+  form, update,
+  people, addPerson,
+  locations, addLocation,
+  projects, addProject,
+  dms, addDm,
+  iopsOwners, addIopsOwner,
+}: {
+  form: NewCaseForm;
+  update: (p: Partial<NewCaseForm>) => void;
+  people: PersonOption[]; addPerson: (name: string) => void;
+  locations: string[]; addLocation: (name: string) => void;
+  projects: ProjectOption[]; addProject: (name: string) => void;
+  dms: PersonOption[]; addDm: (name: string) => void;
+  iopsOwners: PersonOption[]; addIopsOwner: (name: string) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <QuickAddField
+        label="EPAM person" required
+        helper="Resolve a person to continue. First-typed identity is not used without a personRef."
+        value={form.epamPersonId}
+        onChange={id => update({ epamPersonId: id })}
+        options={people.map(p => ({ id: p.id, label: `${p.name} (${p.email})` }))}
+        placeholder="Search by name or email"
+        addLabel="+ New EPAM person"
+        onAdd={addPerson}
+      />
+
+      <QuickAddField
+        label="Location" required
+        value={form.location}
+        onChange={id => update({ location: id })}
+        options={locations.map(l => ({ id: l, label: l }))}
+        placeholder="Search location"
+        addLabel="+ New Location"
+        onAdd={addLocation}
+      />
+
+      <QuickAddField
+        label="Project" required
+        value={form.projectId}
+        onChange={id => update({ projectId: id })}
+        options={projects.map(p => ({ id: p.id, label: `${p.code} — ${p.name}` }))}
+        placeholder="Search project"
+        addLabel="+ New Project"
+        onAdd={addProject}
+      />
+
+      <QuickAddField
+        label="DM" required
+        helper="Recommended"
+        value={form.dmId}
+        onChange={id => update({ dmId: id })}
+        options={dms.map(d => ({ id: d.id, label: `${d.name} (${d.email})` }))}
+        placeholder="Search DM"
+        addLabel="+ New DM"
+        onAdd={addDm}
+      />
+
+      <QuickAddField
+        label="IOPs Owner" required
+        helper="Recommended"
+        value={form.iopsOwnerId}
+        onChange={id => update({ iopsOwnerId: id })}
+        options={iopsOwners.map(o => ({ id: o.id, label: `${o.name} (${o.email})` }))}
+        placeholder="Search IOPs Owner"
+        addLabel="+ New IOPs Owner"
+        onAdd={addIopsOwner}
+      />
+
+      <Field label="Expected start" required helper="Stored in wizard draft for Case open (MVP1-18) — not written to Case here.">
+        <input className="input-base" type="date" value={form.expectedStart} onChange={e => update({ expectedStart: e.target.value })} />
       </Field>
-
-      <Field label="Phone Number">
-        <input className="input-base" type="tel" value={form.phone} onChange={e => update({ phone: e.target.value })} placeholder="+1 (555) 000-0000" />
-      </Field>
-
-      <Field label="Job Title" required>
-        <input className="input-base" value={form.jobTitle} onChange={e => update({ jobTitle: e.target.value })} placeholder="e.g. Senior Software Engineer" />
-      </Field>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <Field label="Department" required>
-          <select className="input-base" value={form.department} onChange={e => update({ department: e.target.value })}>
-            <option value="">Select…</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Product">Product</option>
-            <option value="Design">Design</option>
-            <option value="Operations">Operations</option>
-            <option value="HR">Human Resources</option>
-            <option value="Finance">Finance</option>
-          </select>
-        </Field>
-        <Field label="Employee Type" required>
-          <select className="input-base" value={form.employeeType} onChange={e => update({ employeeType: e.target.value })}>
-            <option value="FTE">Full-Time (FTE)</option>
-            <option value="Contractor">Contractor</option>
-            <option value="Intern">Intern</option>
-            <option value="Temp">Temporary</option>
-          </select>
-        </Field>
-      </div>
     </div>
   );
 }
 
 // ── Step 2: Workflow ──────────────────────────────────────────────────────────
-function Step2({ form, update }: { form: NewCaseForm; update: (p: Partial<NewCaseForm>) => void }) {
-  const selectedProfile = mockProfiles.find(p => p.id === form.profileId);
+function Step2({
+  form, update, vgManagers, addVgManager,
+}: {
+  form: NewCaseForm;
+  update: (p: Partial<NewCaseForm>) => void;
+  vgManagers: VgManagerOption[]; addVgManager: (name: string) => void;
+}) {
+  const selectedManager = vgManagers.find(m => m.id === form.vgManagerId);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)' }}>
-        <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
-          Select the workflow profile and assign a start date and manager for this candidate.
-        </p>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <QuickAddField
+        label="Pick existing VG Manager" required
+        helper='Required. Pick an existing VG Manager or use "+ New VG Manager".'
+        value={form.vgManagerId}
+        onChange={id => update({ vgManagerId: id })}
+        options={vgManagers.map(m => ({ id: m.id, label: `${m.name} (${m.email})` }))}
+        placeholder="Search VG Manager"
+        addLabel="+ New VG Manager"
+        onAdd={addVgManager}
+      />
 
-      <Field label="Workflow Profile" required>
-        <select className="input-base" value={form.profileId} onChange={e => update({ profileId: e.target.value })}>
-          {mockProfiles.map(p => (
-            <option key={p.id} value={p.id}>{p.name} ({p.phases} phases)</option>
-          ))}
-        </select>
-      </Field>
-
-      {selectedProfile && (
+      {selectedManager && (
         <div style={{
-          padding: '12px 14px', borderRadius: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+          padding: '10px 14px', borderRadius: 10,
           background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)',
         }}>
-          <div className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: 8 }}>Profile Details</div>
-          <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)', marginBottom: 6 }}>{selectedProfile.description}</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {selectedProfile.steps.slice(0, 4).map((s, i) => (
-              <span key={i} className="text-code-tabular" style={{
-                padding: '1px 8px', borderRadius: 4, fontSize: 11,
-                background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)',
-              }}>{i + 1}. {s}</span>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(79,70,229,0.2)', color: '#818CF8',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, fontSize: 11,
+            }}>{selectedManager.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{selectedManager.name}</span>
+                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(79,70,229,0.15)', color: '#818CF8', fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+                  {selectedManager.role}
+                </span>
+              </div>
+              <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{selectedManager.org} • {selectedManager.dept}</div>
+            </div>
           </div>
+          {selectedManager.synced && (
+            <span style={{
+              flexShrink: 0, height: 20, padding: '0 8px', borderRadius: 9999,
+              background: 'rgba(5,150,105,0.12)', color: '#34D399',
+              border: '1px solid rgba(5,150,105,0.3)', fontSize: 11, fontWeight: 600,
+            }}>Synchronized</span>
+          )}
         </div>
       )}
 
-      <Field label="Office Location" required>
-        <select className="input-base" value={form.location} onChange={e => update({ location: e.target.value })}>
-          <option value="">Select location…</option>
-          <option value="Malvern (On-site)">Malvern, PA (On-site)</option>
-          <option value="Remote US">Remote US (Nationwide)</option>
-          <option value="Charlotte Hub">Charlotte Hub, NC</option>
-          <option value="Dallas Branch">Dallas Branch, TX</option>
-          <option value="Scottsdale Tech">Scottsdale Tech, AZ</option>
-        </select>
+      <Field label="Job code" helper="Optional job code reference for client billing and project cost center reconciliation.">
+        <input className="input-base" style={{ fontFamily: 'monospace' }} value={form.jobCode} onChange={e => update({ jobCode: e.target.value })} placeholder="e.g. VAN" />
       </Field>
 
-      <Field label="Delivery Manager" required>
-        <select className="input-base" value={form.manager} onChange={e => update({ manager: e.target.value })}>
-          <option value="">Select manager…</option>
-          <option value="Sarah Chen">Sarah Chen</option>
-          <option value="James Park">James Park</option>
-          <option value="Lisa Torres">Lisa Torres</option>
-          <option value="Michael Okafor">Michael Okafor</option>
-        </select>
-      </Field>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+          <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
+            Workflow profile<span style={{ color: '#F87171', marginLeft: 3 }}>*</span>
+          </label>
+          {form.location && (
+            <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>Target Location: {form.location}</span>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {mockProfiles.map(p => {
+            const active = form.profileId === p.id;
+            return (
+              <div
+                key={p.id}
+                onClick={() => update({ profileId: p.id })}
+                style={{
+                  padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
+                  background: active ? 'rgba(79,70,229,0.08)' : 'var(--surface-container)',
+                  border: `1.5px solid ${active ? '#4F46E5' : 'rgba(255,255,255,0.07)'}`,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div style={{
+                      width: 16, height: 16, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                      border: `2px solid ${active ? '#4F46E5' : 'var(--outline-variant)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F46E5' }} />}
+                    </div>
+                    <div>
+                      <div className="text-label-lg" style={{ color: 'var(--on-surface)', marginBottom: 3 }}>{p.name}</div>
+                      <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>{p.description}</div>
+                    </div>
+                  </div>
+                  <span style={{ flexShrink: 0, height: 20, padding: '0 8px', borderRadius: 9999, background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)', fontSize: 11, fontWeight: 600 }}>
+                    {p.milestones} Milestones
+                  </span>
+                </div>
+                {active && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10, paddingLeft: 26 }}>
+                    {p.steps.slice(0, 4).map((s, i) => (
+                      <span key={i} className="text-code-tabular" style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)' }}>
+                        {i + 1}. {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-      <Field label="Target Start Date" required>
-        <input className="input-base" type="date" value={form.startDate} onChange={e => update({ startDate: e.target.value })} />
-      </Field>
+      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-fixed)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
+          <strong style={{ color: 'var(--on-surface)' }}>Client Governance Synced:</strong> Target candidate will be mapped against Vanguard security clearance rules and registered in the talent directory upon review completion.
+        </p>
+      </div>
     </div>
   );
 }
 
 // ── Step 3: Review ────────────────────────────────────────────────────────────
-function Step3Review({ form }: { form: NewCaseForm }) {
-  const profile = mockProfiles.find(p => p.id === form.profileId);
+function Step3Review({
+  form, people, projects, dms, iopsOwners, vgManagers, onEditIdentity,
+}: {
+  form: NewCaseForm;
+  people: PersonOption[];
+  projects: ProjectOption[];
+  dms: PersonOption[];
+  iopsOwners: PersonOption[];
+  vgManagers: VgManagerOption[];
+  onEditIdentity: () => void;
+}) {
+  const person     = people.find(p => p.id === form.epamPersonId);
+  const project    = projects.find(p => p.id === form.projectId);
+  const dm         = dms.find(d => d.id === form.dmId);
+  const iopsOwner  = iopsOwners.find(o => o.id === form.iopsOwnerId);
+  const vgManager  = vgManagers.find(m => m.id === form.vgManagerId);
+  const profile    = mockProfiles.find(p => p.id === form.profileId);
 
-  const rows = [
-    { label: 'Full Name',   value: `${form.firstName} ${form.lastName}` || '—' },
-    { label: 'Email',       value: form.email || '—' },
-    { label: 'Phone',       value: form.phone || '—' },
-    { label: 'Job Title',   value: form.jobTitle || '—' },
-    { label: 'Department',  value: form.department || '—' },
-    { label: 'Emp. Type',   value: form.employeeType },
-    { label: 'Profile',     value: profile?.name ?? '—' },
-    { label: 'Location',    value: form.location || '—' },
-    { label: 'Manager',     value: form.manager || '—' },
-    { label: 'Start Date',  value: form.startDate || '—' },
+  const requiredFields = [form.epamPersonId, form.location, form.projectId, form.dmId, form.iopsOwnerId, form.expectedStart, form.vgManagerId, form.profileId];
+  const readiness = Math.round((requiredFields.filter(Boolean).length / requiredFields.length) * 100);
+
+  let daysBadge: string | null = null;
+  if (form.expectedStart) {
+    const diff = Math.round((new Date(form.expectedStart).getTime() - Date.now()) / 86400000);
+    daysBadge = diff >= 0 ? `In ${diff} day${diff === 1 ? '' : 's'}` : `${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ago`;
+  }
+
+  const rows: { label: string; value: React.ReactNode }[] = [
+    { label: 'Location', value: form.location || '—' },
+    {
+      label: 'Target Start Date',
+      value: form.expectedStart ? (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {form.expectedStart}
+          {daysBadge && (
+            <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(79,70,229,0.15)', color: '#818CF8', fontSize: 10, fontWeight: 600 }}>{daysBadge}</span>
+          )}
+        </span>
+      ) : '—',
+    },
+    { label: 'Project Container', value: project ? `${project.code} — ${project.name}` : '—' },
+    { label: 'Delivery Manager (DM)', value: dm ? <>{dm.name} <span style={{ color: 'var(--on-surface-variant)' }}>({dm.email})</span></> : '—' },
+    { label: 'IOPs Owner', value: iopsOwner ? <>{iopsOwner.name} <span style={{ color: 'var(--on-surface-variant)' }}>({iopsOwner.email})</span></> : '—' },
+    { label: 'VG Manager', value: vgManager ? <>{vgManager.name} <span style={{ color: 'var(--on-surface-variant)' }}>({vgManager.email})</span></> : '—' },
+    {
+      label: 'Client Job Code',
+      value: form.jobCode ? <span className="text-code-tabular" style={{ padding: '2px 8px', borderRadius: 4, background: 'var(--surface-container-high)', color: 'var(--on-surface)' }}>{form.jobCode}</span> : '—',
+    },
+    {
+      label: 'Assigned Workflow',
+      value: profile ? (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#818CF8' }}>{profile.name}</span>
+          <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)', fontSize: 10, fontWeight: 600 }}>{profile.milestones} Milestones</span>
+        </span>
+      ) : '—',
+    },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(5,150,105,0.08)', border: '1px solid rgba(5,150,105,0.2)' }}>
-        <p className="text-body-sm" style={{ color: '#34D399', margin: 0 }}>
-          ✓ Review all details before submitting. This will create the onboarding case and trigger the workflow.
-        </p>
+      {/* Identity summary */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+        padding: '12px 14px', borderRadius: 10,
+        background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(79,70,229,0.2)', color: '#818CF8',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: 12,
+          }}>{person ? person.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '—'}</div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{person?.name ?? 'No person selected'}</span>
+              {person?.kind && (
+                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(5,150,105,0.12)', color: '#34D399', border: '1px solid rgba(5,150,105,0.3)', fontSize: 10, fontWeight: 600 }}>
+                  {person.kind}
+                </span>
+              )}
+            </div>
+            <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{person?.email ?? '—'}</div>
+            {form.location && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--on-surface-variant)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{form.location}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <button type="button" onClick={onEditIdentity} className="btn-ghost btn-sm" style={{ height: 'auto', padding: 0, fontSize: 11, color: 'var(--primary-fixed)', flexShrink: 0 }}>
+          Edit Identity
+        </button>
       </div>
 
-      <div style={{
-        background: 'var(--surface-container)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        borderRadius: 10, overflow: 'hidden',
-      }}>
+      {/* Assignment & Case Configuration */}
+      <div style={{ background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <span className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Assignment &amp; Case Configuration</span>
+          <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>Step 1 &amp; 2 Data</span>
+        </div>
         {rows.map((r, i) => (
           <div key={r.label} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -215,9 +457,61 @@ function Step3Review({ form }: { form: NewCaseForm }) {
             borderBottom: i < rows.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
           }}>
             <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>{r.label}</span>
-            <span className="text-label-lg" style={{ color: r.value === '—' ? 'var(--on-surface-variant)' : 'var(--on-surface)', textAlign: 'right', maxWidth: '60%' }}>{r.value}</span>
+            <span className="text-label-lg" style={{ color: 'var(--on-surface)', textAlign: 'right', maxWidth: '65%' }}>{r.value}</span>
           </div>
         ))}
+      </div>
+
+      {/* Automated Pre-flight Checks */}
+      <div style={{ background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Automated Pre-flight Checks</span>
+          <span style={{
+            height: 20, padding: '0 8px', borderRadius: 9999,
+            background: readiness === 100 ? 'rgba(5,150,105,0.12)' : 'rgba(217,119,6,0.12)',
+            color: readiness === 100 ? '#34D399' : '#FBBF24',
+            border: `1px solid ${readiness === 100 ? 'rgba(5,150,105,0.3)' : 'rgba(217,119,6,0.3)'}`,
+            fontSize: 11, fontWeight: 600,
+          }}>
+            {readiness === 100 ? 'Ready to Provision' : 'Incomplete'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {[
+            'EPAM Global Directory synchronized',
+            'Vanguard billing code verified active',
+            'Hardware inventory reserved in US East depot',
+          ].map(check => (
+            <div key={check} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span className="text-body-sm" style={{ color: 'var(--on-surface)' }}>{check}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--on-surface-variant)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }}>Readiness Score</span>
+          <div style={{ flex: 1, height: 6, borderRadius: 9999, background: 'var(--surface-container-high)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${readiness}%`, background: readiness === 100 ? '#34D399' : '#818CF8', borderRadius: 9999, transition: 'width 0.2s' }} />
+          </div>
+          <span className="text-code-tabular" style={{ color: 'var(--on-surface)', flexShrink: 0 }}>{readiness}%</span>
+        </div>
+      </div>
+
+      {/* Provisioning notice */}
+      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-fixed)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <p className="text-body-sm" style={{ color: 'var(--on-surface-variant)', margin: 0 }}>
+          Creating this case will trigger onboarding notifications and queue credential provisioning 48 hours prior to start date.
+        </p>
       </div>
     </div>
   );
@@ -225,12 +519,57 @@ function Step3Review({ form }: { form: NewCaseForm }) {
 
 // ── Main Drawer ───────────────────────────────────────────────────────────────
 export default function NewCaseDrawer() {
-  const { drawerView, closeDrawer, nextDrawerStep, prevDrawerStep, newCaseForm, updateNewCaseForm } = useApp();
+  const { drawerView, openDrawer, closeDrawer, nextDrawerStep, prevDrawerStep, newCaseForm, updateNewCaseForm } = useApp();
+
+  const [people, setPeople]           = useState<PersonOption[]>(mockEpamPeople);
+  const [locations, setLocations]     = useState<string[]>(mockLocationOptions);
+  const [projects, setProjects]       = useState<ProjectOption[]>(mockProjectOptions);
+  const [dms, setDms]                 = useState<PersonOption[]>(mockDeliveryManagers);
+  const [iopsOwners, setIopsOwners]   = useState<PersonOption[]>(mockIopsOwners);
+  const [vgManagers, setVgManagers]   = useState<VgManagerOption[]>(mockVgManagers);
 
   const isOpen = drawerView !== null;
   const currentStep = drawerView === 'new-case-step1' ? 1 : drawerView === 'new-case-step2' ? 2 : 3;
 
+  const addPerson = (name: string) => {
+    const id = `person-${Date.now()}`;
+    setPeople(prev => [...prev, { id, name, email: `${slug(name)}@epam.com`, kind: 'EPAM Internal' }]);
+    updateNewCaseForm({ epamPersonId: id });
+  };
+  const addLocation = (name: string) => {
+    setLocations(prev => [...prev, name]);
+    updateNewCaseForm({ location: name });
+  };
+  const addProject = (name: string) => {
+    const id = `project-${Date.now()}`;
+    setProjects(prev => [...prev, { id, code: name.toUpperCase().replace(/\s+/g, '-'), name }]);
+    updateNewCaseForm({ projectId: id });
+  };
+  const addDm = (name: string) => {
+    const id = `dm-${Date.now()}`;
+    setDms(prev => [...prev, { id, name, email: `${slug(name)}@epam.com` }]);
+    updateNewCaseForm({ dmId: id });
+  };
+  const addIopsOwner = (name: string) => {
+    const id = `iops-${Date.now()}`;
+    setIopsOwners(prev => [...prev, { id, name, email: `${slug(name)}@epam.com` }]);
+    updateNewCaseForm({ iopsOwnerId: id });
+  };
+  const addVgManager = (name: string) => {
+    const id = `vg-${Date.now()}`;
+    setVgManagers(prev => [...prev, { id, name, email: `${slug(name)}@epam.com`, org: '—', dept: '—', role: 'Primary Contact', synced: false }]);
+    updateNewCaseForm({ vgManagerId: id });
+  };
+
   if (!isOpen) return null;
+
+  const headerSubtitle = currentStep === 1
+    ? 'Create a new onboarding case and assign details'
+    : currentStep === 2
+    ? 'Configure client governance and assignment rules'
+    : 'Verify all case details before opening and provisioning';
+
+  const continueLabel = currentStep === 1 ? 'Next Step →' : 'Next Step: Review →';
 
   return (
     <>
@@ -266,11 +605,8 @@ export default function NewCaseDrawer() {
               </svg>
             </div>
             <div>
-              <div className="text-headline-sm" style={{ color: 'var(--on-surface)' }}>Create New Case</div>
-              <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
-                Step {currentStep} of 3 —&nbsp;
-                {currentStep === 1 ? 'Identity Details' : currentStep === 2 ? 'Workflow Assignment' : 'Review & Submit'}
-              </div>
+              <div className="text-headline-sm" style={{ color: 'var(--on-surface)' }}>New Case</div>
+              <div className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>{headerSubtitle}</div>
             </div>
           </div>
           <button
@@ -295,9 +631,26 @@ export default function NewCaseDrawer() {
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-          {drawerView === 'new-case-step1' && <Step1 form={newCaseForm} update={updateNewCaseForm} />}
-          {drawerView === 'new-case-step2' && <Step2 form={newCaseForm} update={updateNewCaseForm} />}
-          {(drawerView === 'new-case-step3' || drawerView === 'new-case-review') && <Step3Review form={newCaseForm} />}
+          {drawerView === 'new-case-step1' && (
+            <Step1
+              form={newCaseForm} update={updateNewCaseForm}
+              people={people} addPerson={addPerson}
+              locations={locations} addLocation={addLocation}
+              projects={projects} addProject={addProject}
+              dms={dms} addDm={addDm}
+              iopsOwners={iopsOwners} addIopsOwner={addIopsOwner}
+            />
+          )}
+          {drawerView === 'new-case-step2' && (
+            <Step2 form={newCaseForm} update={updateNewCaseForm} vgManagers={vgManagers} addVgManager={addVgManager} />
+          )}
+          {(drawerView === 'new-case-step3' || drawerView === 'new-case-review') && (
+            <Step3Review
+              form={newCaseForm}
+              people={people} projects={projects} dms={dms} iopsOwners={iopsOwners} vgManagers={vgManagers}
+              onEditIdentity={() => openDrawer('new-case-step1')}
+            />
+          )}
         </div>
 
         {/* Footer */}
@@ -308,40 +661,28 @@ export default function NewCaseDrawer() {
           flexShrink: 0,
           background: 'rgba(10,14,22,0.3)',
         }}>
-          <button className="btn-ghost btn-sm" onClick={currentStep === 1 ? closeDrawer : prevDrawerStep}>
-            {currentStep === 1 ? 'Cancel' : '← Back'}
-          </button>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {/* Step dots */}
-            <div style={{ display: 'flex', gap: 5, marginRight: 4 }}>
-              {[1, 2, 3].map(n => (
-                <div key={n} style={{
-                  width: n === currentStep ? 16 : 6, height: 6, borderRadius: 9999,
-                  background: n < currentStep ? '#34D399' : n === currentStep ? '#4F46E5' : 'var(--surface-container-highest)',
-                  transition: 'all 0.2s',
-                }} />
-              ))}
-            </div>
-            {currentStep < 3 ? (
-              <button className="btn-primary btn-sm glow-primary-sm" onClick={nextDrawerStep}>
-                Continue →
-              </button>
-            ) : (
-              <button
-                className="btn-primary btn-sm glow-primary"
-                onClick={() => {
-                  // In a real app, would submit here
-                  closeDrawer();
-                }}
-                style={{ background: '#059669', boxShadow: '0 0 12px rgba(5,150,105,0.4)' }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Submit Case
-              </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-ghost btn-sm" onClick={closeDrawer}>Cancel</button>
+            {currentStep > 1 && (
+              <button className="btn-ghost btn-sm" onClick={prevDrawerStep}>← Back</button>
             )}
           </div>
+          {currentStep < 3 ? (
+            <button className="btn-primary btn-sm glow-primary-sm" onClick={nextDrawerStep}>
+              {continueLabel}
+            </button>
+          ) : (
+            <button
+              className="btn-primary btn-sm glow-primary"
+              onClick={closeDrawer}
+              style={{ background: '#059669', boxShadow: '0 0 12px rgba(5,150,105,0.4)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Confirm &amp; Open Case
+            </button>
+          )}
         </div>
       </div>
     </>
