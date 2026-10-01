@@ -11,21 +11,21 @@ function ProfileCard({ profile, onEdit, onCanvas }: {
   return (
     <div style={{
       background: 'var(--surface-container-low)',
-      border: profile.isDefault ? '1px solid rgba(79,70,229,0.3)' : '1px solid rgba(255,255,255,0.07)',
+      border: profile.isDefault ? '1px solid color-mix(in srgb, var(--primary-container) 30%, transparent)' : '1px solid var(--border-subtle)',
       borderRadius: 14, padding: '20px',
       boxShadow: profile.isDefault
-        ? 'inset 0 1px 0 rgba(255,255,255,0.06), 0 0 24px -4px rgba(79,70,229,0.2)'
-        : 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)',
+        ? 'inset 0 1px 0 var(--border-strong), 0 0 24px -4px color-mix(in srgb, var(--primary-container) 20%, transparent)'
+        : 'inset 0 1px 0 var(--border-subtle), var(--shadow-sm)',
       transition: 'border-color 0.2s, box-shadow 0.2s',
     }}>
       {/* Top row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-          background: profile.isDefault ? 'rgba(79,70,229,0.2)' : 'var(--surface-container-high)',
+          background: profile.isDefault ? 'color-mix(in srgb, var(--primary-container) 20%, transparent)' : 'var(--surface-container-high)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={profile.isDefault ? '#818CF8' : 'var(--on-surface-variant)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={profile.isDefault ? 'var(--color-info)' : 'var(--on-surface-variant)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             {profile.icon === 'verified_user' && <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></>}
             {profile.icon === 'output' && <><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>}
             {profile.icon === 'alt_route' && <><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></>}
@@ -41,18 +41,18 @@ function ProfileCard({ profile, onEdit, onCanvas }: {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               height: 20, padding: '0 8px', borderRadius: 9999,
-              background: 'rgba(5,150,105,0.12)', color: '#34D399',
-              border: '1px solid rgba(5,150,105,0.3)', fontSize: 11, fontWeight: 600,
+              background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)',
+              border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', fontSize: 11, fontWeight: 600,
             }}>
-              <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+              <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
               Active
             </span>
             {profile.isDefault && (
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 height: 20, padding: '0 8px', borderRadius: 9999,
-                background: 'rgba(79,70,229,0.15)', color: '#818CF8',
-                border: '1px solid rgba(79,70,229,0.3)', fontSize: 11, fontWeight: 600,
+                background: 'color-mix(in srgb, var(--primary-container) 15%, transparent)', color: 'var(--color-info)',
+                border: '1px solid color-mix(in srgb, var(--primary-container) 30%, transparent)', fontSize: 11, fontWeight: 600,
               }}>
                 ★ Default
               </span>
@@ -86,13 +86,13 @@ function ProfileCard({ profile, onEdit, onCanvas }: {
       </div>
 
       {/* Steps */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 16, padding: '8px 12px', background: 'rgba(10,14,22,0.4)', borderRadius: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 16, padding: '8px 12px', background: 'color-mix(in srgb, var(--scrim) 50%, transparent)', borderRadius: 8 }}>
         <span className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginRight: 4 }}>Steps:</span>
         {profile.steps.map((s, i) => (
           <span key={i} className="text-code-tabular" style={{
             padding: '1px 8px', borderRadius: 4, fontSize: 11,
-            background: i === 0 ? 'rgba(5,150,105,0.15)' : i <= 2 ? 'rgba(79,70,229,0.12)' : 'var(--surface-container-high)',
-            color: i === 0 ? '#34D399' : i <= 2 ? '#818CF8' : 'var(--on-surface-variant)',
+            background: i === 0 ? 'color-mix(in srgb, var(--color-success) 15%, transparent)' : i <= 2 ? 'color-mix(in srgb, var(--primary-container) 12%, transparent)' : 'var(--surface-container-high)',
+            color: i === 0 ? 'var(--color-success)' : i <= 2 ? 'var(--color-info)' : 'var(--on-surface-variant)',
           }}>
             {i + 1}. {s}
           </span>
@@ -139,11 +139,11 @@ export default function AdminProfilesView() {
         background: 'var(--surface-container-low)',
         borderRadius: 16, padding: '28px 28px',
         overflow: 'hidden',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+        boxShadow: 'var(--shadow-md)',
       }}>
         {/* Glow orbs */}
-        <div style={{ position: 'absolute', right: -80, top: -96, width: 384, height: 384, borderRadius: '50%', background: 'rgba(79,70,229,0.1)', filter: 'blur(60px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', right: 192, bottom: -96, width: 288, height: 288, borderRadius: '50%', background: 'rgba(0,83,219,0.07)', filter: 'blur(48px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: -80, top: -96, width: 384, height: 384, borderRadius: '50%', background: 'color-mix(in srgb, var(--primary-container) 10%, transparent)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: 192, bottom: -96, width: 288, height: 288, borderRadius: '50%', background: 'color-mix(in srgb, var(--secondary-container) 7%, transparent)', filter: 'blur(48px)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
           <div>
@@ -182,7 +182,7 @@ export default function AdminProfilesView() {
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16,
           marginTop: 24, padding: '16px', borderRadius: 12,
-          background: 'rgba(10,14,22,0.5)', border: '1px solid rgba(255,255,255,0.04)',
+          background: 'color-mix(in srgb, var(--scrim) 62.5%, transparent)', border: '1px solid var(--border-subtle)',
         }}>
           {[
             { label: 'Total Profiles', value: '3', sub: 'Active', icon: '◆', color: 'var(--primary)' },
@@ -245,7 +245,7 @@ export default function AdminProfilesView() {
       {/* Active Track Architecture Preview */}
       <div style={{
         background: 'var(--surface-container-low)', borderRadius: 14, padding: '20px',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: '1px solid var(--border-subtle)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -266,45 +266,45 @@ export default function AdminProfilesView() {
         </div>
 
         {/* SVG Flowchart */}
-        <div style={{ background: 'rgba(10,14,22,0.6)', borderRadius: 10, padding: '16px', overflowX: 'auto' }}>
+        <div style={{ background: 'color-mix(in srgb, var(--scrim) 75%, transparent)', borderRadius: 10, padding: '16px', overflowX: 'auto' }}>
           <svg viewBox="0 0 880 120" width="100%" style={{ minWidth: 700, height: 120 }}>
-            <path d="M 110 60 H 210" stroke="#68dba9" strokeDasharray="4 4" strokeWidth="2" fill="none"/>
-            <path d="M 270 60 H 370" stroke="#68dba9" strokeWidth="2" fill="none"/>
-            <path d="M 430 60 H 530" stroke="#c3c0ff" strokeWidth="2" fill="none"/>
-            <path d="M 590 60 H 690" stroke="#464555" strokeWidth="2" fill="none"/>
-            <path d="M 750 60 H 810" stroke="#464555" strokeWidth="2" fill="none"/>
+            <path d="M 110 60 H 210" stroke="var(--tertiary)" strokeDasharray="4 4" strokeWidth="2" fill="none"/>
+            <path d="M 270 60 H 370" stroke="var(--tertiary)" strokeWidth="2" fill="none"/>
+            <path d="M 430 60 H 530" stroke="var(--primary)" strokeWidth="2" fill="none"/>
+            <path d="M 590 60 H 690" stroke="var(--outline-variant)" strokeWidth="2" fill="none"/>
+            <path d="M 750 60 H 810" stroke="var(--outline-variant)" strokeWidth="2" fill="none"/>
             {[
-              { x: 50, color: '#006e4c', border: '#68dba9', text: 'INITIATE', check: true },
-              { x: 210, color: '#006e4c', border: '#68dba9', text: 'CREDS', check: true },
+              { x: 50, color: 'var(--tertiary-container)', border: 'var(--tertiary)', text: 'INITIATE', check: true },
+              { x: 210, color: 'var(--tertiary-container)', border: 'var(--tertiary)', text: 'CREDS', check: true },
             ].map((n, i) => (
               <g key={i} transform={`translate(${n.x}, 30)`}>
                 <rect x="0" y="0" width="60" height="60" rx="12" fill={n.color} fillOpacity="0.3" stroke={n.border} strokeWidth="1.5"/>
                 <circle cx="30" cy="30" r="14" fill={n.color}/>
-                <path d="M 24 30 L 28 34 L 36 26" stroke="#85f8c4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" fill="none"/>
-                <text x="30" y="78" textAnchor="middle" fill="#c7c4d8" fontSize="10" fontFamily="Inter" fontWeight="600">{n.text}</text>
+                <path d="M 24 30 L 28 34 L 36 26" stroke="var(--tertiary-fixed)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" fill="none"/>
+                <text x="30" y="78" textAnchor="middle" fill="var(--on-surface-variant)" fontSize="10" fontFamily="Inter" fontWeight="600">{n.text}</text>
               </g>
             ))}
             <g transform="translate(370, 30)">
-              <rect x="0" y="0" width="60" height="60" rx="12" fill="#4f46e5" fillOpacity="0.25" stroke="#c3c0ff" strokeWidth="2"/>
-              <circle cx="30" cy="30" r="16" fill="#4f46e5"/>
-              <circle cx="30" cy="30" r="8" fill="#c3c0ff"/>
-              <text x="30" y="78" textAnchor="middle" fill="#c3c0ff" fontSize="10" fontFamily="Inter" fontWeight="700">WD ASSIGN</text>
+              <rect x="0" y="0" width="60" height="60" rx="12" fill="var(--primary-container)" fillOpacity="0.25" stroke="var(--primary)" strokeWidth="2"/>
+              <circle cx="30" cy="30" r="16" fill="var(--primary-container)"/>
+              <circle cx="30" cy="30" r="8" fill="var(--primary)"/>
+              <text x="30" y="78" textAnchor="middle" fill="var(--primary)" fontSize="10" fontFamily="Inter" fontWeight="700">WD ASSIGN</text>
             </g>
             {[
               { x: 530, label: 'EQUIPMENT', num: '04' },
               { x: 690, label: 'BGC CLEAR', num: '05' },
             ].map((n, i) => (
               <g key={i} transform={`translate(${n.x}, 30)`}>
-                <rect x="0" y="0" width="60" height="60" rx="12" fill="#181c24" stroke="#464555" strokeWidth="1.5"/>
-                <circle cx="30" cy="30" r="12" fill="#262a33"/>
-                <text x="30" y="34" textAnchor="middle" fill="#918fa1" fontSize="11" fontFamily="Inter">{n.num}</text>
-                <text x="30" y="78" textAnchor="middle" fill="#918fa1" fontSize="10" fontFamily="Inter" fontWeight="500">{n.label}</text>
+                <rect x="0" y="0" width="60" height="60" rx="12" fill="var(--surface-container-low)" stroke="var(--outline-variant)" strokeWidth="1.5"/>
+                <circle cx="30" cy="30" r="12" fill="var(--surface-container-high)"/>
+                <text x="30" y="34" textAnchor="middle" fill="var(--outline)" fontSize="11" fontFamily="Inter">{n.num}</text>
+                <text x="30" y="78" textAnchor="middle" fill="var(--outline)" fontSize="10" fontFamily="Inter" fontWeight="500">{n.label}</text>
               </g>
             ))}
             <g transform="translate(810, 35)">
-              <circle cx="25" cy="25" r="22" fill="#262a33" stroke="#464555" strokeWidth="1"/>
-              <path d="M 20 18 V 32 M 20 18 L 30 23 L 20 28" fill="#4f46e5" stroke="#c3c0ff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
-              <text x="25" y="68" textAnchor="middle" fill="#918fa1" fontSize="10" fontFamily="Inter" fontWeight="500">ONBOARDED</text>
+              <circle cx="25" cy="25" r="22" fill="var(--surface-container-high)" stroke="var(--outline-variant)" strokeWidth="1"/>
+              <path d="M 20 18 V 32 M 20 18 L 30 23 L 20 28" fill="var(--primary-container)" stroke="var(--primary)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
+              <text x="25" y="68" textAnchor="middle" fill="var(--outline)" fontSize="10" fontFamily="Inter" fontWeight="500">ONBOARDED</text>
             </g>
           </svg>
         </div>

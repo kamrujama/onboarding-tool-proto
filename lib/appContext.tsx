@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { SIDEBAR_WIDTH_COLLAPSED, SIDEBAR_WIDTH_EXPANDED } from './layout';
 
 // ── App State Types ────────────────────────────────────────────────────────────
 
@@ -50,7 +51,11 @@ export interface ProfileForm {
 interface AppState {
   activeView: ActiveView;
   setActiveView: (v: ActiveView) => void;
-  
+
+  sidebarCollapsed: boolean;
+  sidebarWidth: number;
+  toggleSidebarCollapsed: () => void;
+
   drawerView: DrawerView;
   openDrawer: (v: DrawerView) => void;
   closeDrawer: () => void;
@@ -99,8 +104,11 @@ const defaultProfileForm: ProfileForm = {
 
 const AppContext = createContext<AppState | null>(null);
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'sidebar-collapsed';
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerView, setDrawerView] = useState<DrawerView>(null);
   const [modalView, setModalView] = useState<ModalView>(null);
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
@@ -109,6 +117,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [propertiesPanelOpen, setPropertiesPanelOpen] = useState(true);
   const [newCaseForm, setNewCaseForm] = useState<NewCaseForm>(defaultNewCaseForm);
   const [profileForm, setProfileForm] = useState<ProfileForm>(defaultProfileForm);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore of persisted UI state on mount; SSR default is `false`, so this is an intentional post-hydration sync, not a derived-state anti-pattern.
+    if (stored === 'true') setSidebarCollapsed(true);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
+  const toggleSidebarCollapsed = useCallback(() => setSidebarCollapsed(v => !v), []);
+  const sidebarWidth = sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
 
   const openDrawer = useCallback((v: DrawerView) => setDrawerView(v), []);
   const closeDrawer = useCallback(() => {
@@ -156,6 +177,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{
       activeView, setActiveView,
+      sidebarCollapsed, sidebarWidth, toggleSidebarCollapsed,
       drawerView, openDrawer, closeDrawer, nextDrawerStep, prevDrawerStep,
       modalView, openModal, closeModal, editingProfileId,
       selectedCanvasProfileId, setSelectedCanvasProfileId,

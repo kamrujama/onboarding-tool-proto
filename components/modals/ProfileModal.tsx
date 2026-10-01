@@ -2,6 +2,7 @@
 
 import { useApp, ProfileForm } from '@/lib/appContext';
 import { mockProfiles } from '@/lib/mockData';
+import AppSelect from '@/components/ui/AppSelect';
 
 // ── Create/Edit Profile Modal ─────────────────────────────────────────────────
 
@@ -9,7 +10,7 @@ function Field({ label, children, required }: { label: string; children: React.R
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
-        {label}{required && <span style={{ color: '#F87171', marginLeft: 3 }}>*</span>}
+        {label}{required && <span style={{ color: 'var(--color-danger)', marginLeft: 3 }}>*</span>}
       </label>
       {children}
     </div>
@@ -60,10 +61,10 @@ export default function ProfileModal() {
           onClick={e => e.stopPropagation()}
           style={{
             width: '100%', maxWidth: 560, maxHeight: '90vh',
-            background: '#111827',
-            border: '1px solid rgba(255,255,255,0.14)',
+            background: 'var(--surface-overlay)',
+            border: '1px solid var(--border-strong)',
             borderRadius: 20,
-            boxShadow: '0 20px 60px -8px rgba(0,0,0,0.8)',
+            boxShadow: '0 20px 60px -8px var(--scrim)',
             display: 'flex', flexDirection: 'column',
             overflow: 'hidden',
             margin: '0 16px',
@@ -72,9 +73,9 @@ export default function ProfileModal() {
           {/* Header */}
           <div style={{
             padding: '20px 24px 16px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: 'rgba(10,14,22,0.3)',
+            background: 'color-mix(in srgb, var(--scrim) 37.5%, transparent)',
             flexShrink: 0,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -141,8 +142,8 @@ export default function ProfileModal() {
               <textarea
                 style={{
                   width: '100%', padding: '8px 12px', borderRadius: 8,
-                  background: '#111827', border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#F8FAFC', fontSize: 14, fontFamily: 'var(--font-sans)',
+                  background: 'var(--surface-input)', border: '1px solid var(--border-strong)',
+                  color: 'var(--on-surface)', fontSize: 14, fontFamily: 'var(--font-sans)',
                   resize: 'vertical', minHeight: 72, outline: 'none',
                   transition: 'border-color 0.15s, box-shadow 0.15s',
                 }}
@@ -155,18 +156,28 @@ export default function ProfileModal() {
             {/* Account + Status */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <Field label="Account" required>
-                <select className="input-base" value={effectiveAccount} onChange={e => updateProfileForm({ account: e.target.value })}>
-                  <option value="VG">VG</option>
-                  <option value="EPAM">EPAM</option>
-                  <option value="Client-A">Client-A</option>
-                </select>
+                <AppSelect
+                  value={effectiveAccount}
+                  onChange={v => updateProfileForm({ account: v })}
+                  searchable={false}
+                  options={[
+                    { value: 'VG', label: 'VG' },
+                    { value: 'EPAM', label: 'EPAM' },
+                    { value: 'Client-A', label: 'Client-A' },
+                  ]}
+                />
               </Field>
               <Field label="Status">
-                <select className="input-base" value={effectiveStatus} onChange={e => updateProfileForm({ status: e.target.value as ProfileForm['status'] })}>
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="archived">Archived</option>
-                </select>
+                <AppSelect
+                  value={effectiveStatus}
+                  onChange={v => updateProfileForm({ status: v as ProfileForm['status'] })}
+                  searchable={false}
+                  options={[
+                    { value: 'draft', label: 'Draft' },
+                    { value: 'active', label: 'Active' },
+                    { value: 'archived', label: 'Archived' },
+                  ]}
+                />
               </Field>
             </div>
 
@@ -179,14 +190,14 @@ export default function ProfileModal() {
                     <label key={loc} style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                      background: checked ? 'rgba(79,70,229,0.1)' : 'var(--surface-container)',
-                      border: `1px solid ${checked ? 'rgba(79,70,229,0.35)' : 'rgba(255,255,255,0.05)'}`,
+                      background: checked ? 'color-mix(in srgb, var(--primary-container) 10%, transparent)' : 'var(--surface-container)',
+                      border: `1px solid ${checked ? 'color-mix(in srgb, var(--primary-container) 35%, transparent)' : 'var(--border-subtle)'}`,
                       transition: 'all 0.15s',
                     }}>
                       <div style={{
                         width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                        background: checked ? '#4F46E5' : '#111827',
-                        border: `1px solid ${checked ? '#4F46E5' : 'rgba(255,255,255,0.2)'}`,
+                        background: checked ? 'var(--primary-container)' : 'var(--surface-input)',
+                        border: `1px solid ${checked ? 'var(--primary-container)' : 'var(--border-strong)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.15s',
                       }}>
@@ -209,7 +220,7 @@ export default function ProfileModal() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   height: 20, padding: '0 8px', borderRadius: 9999,
-                  background: 'rgba(79,70,229,0.15)', color: '#818CF8',
+                  background: 'color-mix(in srgb, var(--primary-container) 15%, transparent)', color: 'var(--color-info)',
                   fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center',
                 }}>{effectiveLocations.length} selected</span>
                 <button className="btn-ghost" style={{ height: 20, fontSize: 11, padding: '0 8px' }} onClick={() => updateProfileForm({ locations: [] })}>
@@ -222,9 +233,9 @@ export default function ProfileModal() {
           {/* Footer */}
           <div style={{
             padding: '16px 24px',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex', justifyContent: 'flex-end', gap: 10,
-            background: 'rgba(10,14,22,0.3)',
+            background: 'color-mix(in srgb, var(--scrim) 37.5%, transparent)',
             flexShrink: 0,
           }}>
             <button className="btn-ghost btn-sm" onClick={closeModal}>Cancel</button>

@@ -14,7 +14,7 @@ export default function OnboardedView() {
       {/* Header */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span className="text-label-sm" style={{ color: 'var(--tertiary)', background: 'rgba(5,150,105,0.12)', border: '1px solid rgba(5,150,105,0.3)', padding: '2px 10px', borderRadius: 9999, textTransform: 'uppercase', fontWeight: 700 }}>
+          <span className="text-label-sm" style={{ color: 'var(--tertiary)', background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', padding: '2px 10px', borderRadius: 9999, textTransform: 'uppercase', fontWeight: 700 }}>
             Completed
           </span>
         </div>
@@ -29,13 +29,13 @@ export default function OnboardedView() {
         {([
           { label: 'Total Onboarded', value: '14', sub: 'Q4 2026' },
           { label: 'Avg. Duration', value: '21.4d', sub: 'days' },
-          { label: 'On-time Rate', value: '92%', color: '#34D399' },
-          { label: 'SLA Breaches', value: '1', color: '#F87171' },
+          { label: 'On-time Rate', value: '92%', color: 'var(--color-success)' },
+          { label: 'SLA Breaches', value: '1', color: 'var(--color-danger)' },
         ] as { label: string; value: string; sub?: string; color?: string }[]).map(s => (
           <div key={s.label} style={{
             flex: 1, minWidth: 140,
             background: 'var(--surface-container-low)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid var(--border-subtle)',
             borderRadius: 12, padding: '16px 20px',
           }}>
             <div className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: 8 }}>{s.label}</div>
@@ -47,7 +47,7 @@ export default function OnboardedView() {
       {/* Table */}
       <div style={{
         background: 'var(--surface-container-low)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: 16, overflow: 'hidden',
       }}>
         <div className="table-header" style={{
@@ -68,9 +68,9 @@ export default function OnboardedView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(5,150,105,0.15)',
+                background: 'color-mix(in srgb, var(--color-success) 15%, transparent)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#34D399', fontWeight: 700, fontSize: 11,
+                color: 'var(--color-success)', fontWeight: 700, fontSize: 11,
               }}>{c.initials}</div>
               <div>
                 <div className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{c.name}</div>
@@ -80,7 +80,7 @@ export default function OnboardedView() {
             <div className="text-body-sm" style={{ color: 'var(--on-surface)' }}>{c.location}</div>
             <div className="text-body-sm" style={{ color: 'var(--on-surface)' }}>{c.completedDate}</div>
             <div>
-              <span className="text-code-tabular" style={{ color: c.daysToOnboard <= 21 ? '#34D399' : '#FBBF24' }}>
+              <span className="text-code-tabular" style={{ color: c.daysToOnboard <= 21 ? 'var(--color-success)' : 'var(--color-warning)' }}>
                 {c.daysToOnboard}d
               </span>
             </div>
@@ -88,8 +88,8 @@ export default function OnboardedView() {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 height: 20, padding: '0 8px', borderRadius: 9999,
-                background: 'rgba(5,150,105,0.12)', color: '#34D399',
-                border: '1px solid rgba(5,150,105,0.3)',
+                background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)',
+                border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)',
                 fontSize: 11, fontWeight: 600,
               }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

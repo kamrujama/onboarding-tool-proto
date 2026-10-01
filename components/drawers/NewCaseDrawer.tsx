@@ -8,6 +8,8 @@ import {
   mockDeliveryManagers, mockIopsOwners, mockVgManagers,
   PersonOption, ProjectOption, VgManagerOption,
 } from '@/lib/mockData';
+import AppSelect from '@/components/ui/AppSelect';
+import AppDatePicker from '@/components/ui/AppDatePicker';
 
 // ── Step Progress Indicator ────────────────────────────────────────────────────
 function StepIndicator({ step }: { step: number }) {
@@ -27,7 +29,7 @@ function StepIndicator({ step }: { step: number }) {
             {i > 0 && (
               <div style={{
                 width: 24, height: 2, flexShrink: 0,
-                background: isComplete ? '#34D399' : 'var(--surface-container-highest)',
+                background: isComplete ? 'var(--color-success)' : 'var(--surface-container-highest)',
                 marginTop: -14,
               }} />
             )}
@@ -55,7 +57,7 @@ function Field({ label, children, required, helper }: { label: string; children:
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
-        {label}{required && <span style={{ color: '#F87171', marginLeft: 3 }}>*</span>}
+        {label}{required && <span style={{ color: 'var(--color-danger)', marginLeft: 3 }}>*</span>}
       </label>
       {children}
       {helper && <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{helper}</span>}
@@ -92,7 +94,7 @@ function QuickAddField({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
-          {label}{required && <span style={{ color: '#F87171', marginLeft: 3 }}>*</span>}
+          {label}{required && <span style={{ color: 'var(--color-danger)', marginLeft: 3 }}>*</span>}
         </label>
         <button
           type="button"
@@ -124,10 +126,12 @@ function QuickAddField({
           <button type="button" className="btn-ghost btn-sm" style={{ flexShrink: 0 }} onClick={() => { setAdding(false); setDraft(''); }}>Cancel</button>
         </div>
       ) : (
-        <select className="input-base" value={value} onChange={e => onChange(e.target.value)}>
-          <option value="">{placeholder}</option>
-          {options.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-        </select>
+        <AppSelect
+          value={value}
+          onChange={onChange}
+          options={options.map(o => ({ value: o.id, label: o.label }))}
+          placeholder={placeholder}
+        />
       )}
 
       {helper && <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>{helper}</span>}
@@ -210,7 +214,7 @@ function Step1({
       />
 
       <Field label="Expected start" required helper="Stored in wizard draft for Case open (MVP1-18) — not written to Case here.">
-        <input className="input-base" type="date" value={form.expectedStart} onChange={e => update({ expectedStart: e.target.value })} />
+        <AppDatePicker value={form.expectedStart} onChange={v => update({ expectedStart: v })} />
       </Field>
     </div>
   );
@@ -243,19 +247,19 @@ function Step2({
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
           padding: '10px 14px', borderRadius: 10,
-          background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)',
+          background: 'var(--surface-container)', border: '1px solid var(--border-subtle)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-              background: 'rgba(79,70,229,0.2)', color: '#818CF8',
+              background: 'color-mix(in srgb, var(--primary-container) 20%, transparent)', color: 'var(--color-info)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: 11,
             }}>{selectedManager.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{selectedManager.name}</span>
-                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(79,70,229,0.15)', color: '#818CF8', fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
+                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'color-mix(in srgb, var(--primary-container) 15%, transparent)', color: 'var(--color-info)', fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
                   {selectedManager.role}
                 </span>
               </div>
@@ -265,8 +269,8 @@ function Step2({
           {selectedManager.synced && (
             <span style={{
               flexShrink: 0, height: 20, padding: '0 8px', borderRadius: 9999,
-              background: 'rgba(5,150,105,0.12)', color: '#34D399',
-              border: '1px solid rgba(5,150,105,0.3)', fontSize: 11, fontWeight: 600,
+              background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)',
+              border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', fontSize: 11, fontWeight: 600,
             }}>Synchronized</span>
           )}
         </div>
@@ -279,7 +283,7 @@ function Step2({
       <div>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
           <label className="text-label-lg" style={{ color: 'var(--on-surface-variant)' }}>
-            Workflow profile<span style={{ color: '#F87171', marginLeft: 3 }}>*</span>
+            Workflow profile<span style={{ color: 'var(--color-danger)', marginLeft: 3 }}>*</span>
           </label>
           {form.location && (
             <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>Target Location: {form.location}</span>
@@ -294,8 +298,8 @@ function Step2({
                 onClick={() => update({ profileId: p.id })}
                 style={{
                   padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                  background: active ? 'rgba(79,70,229,0.08)' : 'var(--surface-container)',
-                  border: `1.5px solid ${active ? '#4F46E5' : 'rgba(255,255,255,0.07)'}`,
+                  background: active ? 'color-mix(in srgb, var(--primary-container) 8%, transparent)' : 'var(--surface-container)',
+                  border: `1.5px solid ${active ? 'var(--primary-container)' : 'var(--border-subtle)'}`,
                   transition: 'all 0.15s',
                 }}
               >
@@ -303,10 +307,10 @@ function Step2({
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <div style={{
                       width: 16, height: 16, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                      border: `2px solid ${active ? '#4F46E5' : 'var(--outline-variant)'}`,
+                      border: `2px solid ${active ? 'var(--primary-container)' : 'var(--outline-variant)'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F46E5' }} />}
+                      {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--primary-container)' }} />}
                     </div>
                     <div>
                       <div className="text-label-lg" style={{ color: 'var(--on-surface)', marginBottom: 3 }}>{p.name}</div>
@@ -332,7 +336,7 @@ function Step2({
         </div>
       </div>
 
-      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'color-mix(in srgb, var(--primary-container) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--primary-container) 20%, transparent)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-fixed)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
@@ -366,9 +370,10 @@ function Step3Review({
   const requiredFields = [form.epamPersonId, form.location, form.projectId, form.dmId, form.iopsOwnerId, form.expectedStart, form.vgManagerId, form.profileId];
   const readiness = Math.round((requiredFields.filter(Boolean).length / requiredFields.length) * 100);
 
+  const [now] = useState(() => Date.now());
   let daysBadge: string | null = null;
   if (form.expectedStart) {
-    const diff = Math.round((new Date(form.expectedStart).getTime() - Date.now()) / 86400000);
+    const diff = Math.round((new Date(form.expectedStart).getTime() - now) / 86400000);
     daysBadge = diff >= 0 ? `In ${diff} day${diff === 1 ? '' : 's'}` : `${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ago`;
   }
 
@@ -380,7 +385,7 @@ function Step3Review({
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {form.expectedStart}
           {daysBadge && (
-            <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(79,70,229,0.15)', color: '#818CF8', fontSize: 10, fontWeight: 600 }}>{daysBadge}</span>
+            <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'color-mix(in srgb, var(--primary-container) 15%, transparent)', color: 'var(--color-info)', fontSize: 10, fontWeight: 600 }}>{daysBadge}</span>
           )}
         </span>
       ) : '—',
@@ -397,7 +402,7 @@ function Step3Review({
       label: 'Assigned Workflow',
       value: profile ? (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: '#818CF8' }}>{profile.name}</span>
+          <span style={{ color: 'var(--color-info)' }}>{profile.name}</span>
           <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)', fontSize: 10, fontWeight: 600 }}>{profile.milestones} Milestones</span>
         </span>
       ) : '—',
@@ -410,12 +415,12 @@ function Step3Review({
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
         padding: '12px 14px', borderRadius: 10,
-        background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)',
+        background: 'var(--surface-container)', border: '1px solid var(--border-subtle)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-            background: 'rgba(79,70,229,0.2)', color: '#818CF8',
+            background: 'color-mix(in srgb, var(--primary-container) 20%, transparent)', color: 'var(--color-info)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 700, fontSize: 12,
           }}>{person ? person.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '—'}</div>
@@ -423,7 +428,7 @@ function Step3Review({
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{person?.name ?? 'No person selected'}</span>
               {person?.kind && (
-                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'rgba(5,150,105,0.12)', color: '#34D399', border: '1px solid rgba(5,150,105,0.3)', fontSize: 10, fontWeight: 600 }}>
+                <span style={{ height: 18, padding: '0 7px', borderRadius: 9999, background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', fontSize: 10, fontWeight: 600 }}>
                   {person.kind}
                 </span>
               )}
@@ -445,8 +450,8 @@ function Step3Review({
       </div>
 
       {/* Assignment & Case Configuration */}
-      <div style={{ background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ background: 'var(--surface-container)', border: '1px solid var(--border-subtle)', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
           <span className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Assignment &amp; Case Configuration</span>
           <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', fontSize: 11 }}>Step 1 &amp; 2 Data</span>
         </div>
@@ -454,7 +459,7 @@ function Step3Review({
           <div key={r.label} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '10px 14px',
-            borderBottom: i < rows.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+            borderBottom: i < rows.length - 1 ? '1px solid var(--border-subtle)' : 'none',
           }}>
             <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)' }}>{r.label}</span>
             <span className="text-label-lg" style={{ color: 'var(--on-surface)', textAlign: 'right', maxWidth: '65%' }}>{r.value}</span>
@@ -463,14 +468,14 @@ function Step3Review({
       </div>
 
       {/* Automated Pre-flight Checks */}
-      <div style={{ background: 'var(--surface-container)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: 14 }}>
+      <div style={{ background: 'var(--surface-container)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <span className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Automated Pre-flight Checks</span>
           <span style={{
             height: 20, padding: '0 8px', borderRadius: 9999,
-            background: readiness === 100 ? 'rgba(5,150,105,0.12)' : 'rgba(217,119,6,0.12)',
-            color: readiness === 100 ? '#34D399' : '#FBBF24',
-            border: `1px solid ${readiness === 100 ? 'rgba(5,150,105,0.3)' : 'rgba(217,119,6,0.3)'}`,
+            background: readiness === 100 ? 'color-mix(in srgb, var(--color-success) 12%, transparent)' : 'color-mix(in srgb, var(--color-warning) 12%, transparent)',
+            color: readiness === 100 ? 'var(--color-success)' : 'var(--color-warning)',
+            border: `1px solid ${readiness === 100 ? 'color-mix(in srgb, var(--color-success) 30%, transparent)' : 'color-mix(in srgb, var(--color-warning) 30%, transparent)'}`,
             fontSize: 11, fontWeight: 600,
           }}>
             {readiness === 100 ? 'Ready to Provision' : 'Incomplete'}
@@ -484,7 +489,7 @@ function Step3Review({
             'Hardware inventory reserved in US East depot',
           ].map(check => (
             <div key={check} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
               <span className="text-body-sm" style={{ color: 'var(--on-surface)' }}>{check}</span>
@@ -498,14 +503,14 @@ function Step3Review({
           </svg>
           <span className="text-body-sm" style={{ color: 'var(--on-surface-variant)', flexShrink: 0 }}>Readiness Score</span>
           <div style={{ flex: 1, height: 6, borderRadius: 9999, background: 'var(--surface-container-high)', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${readiness}%`, background: readiness === 100 ? '#34D399' : '#818CF8', borderRadius: 9999, transition: 'width 0.2s' }} />
+            <div style={{ height: '100%', width: `${readiness}%`, background: readiness === 100 ? 'var(--color-success)' : 'var(--color-info)', borderRadius: 9999, transition: 'width 0.2s' }} />
           </div>
           <span className="text-code-tabular" style={{ color: 'var(--on-surface)', flexShrink: 0 }}>{readiness}%</span>
         </div>
       </div>
 
       {/* Provisioning notice */}
-      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(79,70,229,0.08)', border: '1px solid rgba(79,70,229,0.2)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <div style={{ padding: '12px 14px', borderRadius: 10, background: 'color-mix(in srgb, var(--primary-container) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--primary-container) 20%, transparent)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary-fixed)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
@@ -589,8 +594,8 @@ export default function NewCaseDrawer() {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '18px 20px 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          background: 'rgba(10,14,22,0.3)',
+          borderBottom: '1px solid var(--border-subtle)',
+          background: 'color-mix(in srgb, var(--scrim) 37.5%, transparent)',
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -625,7 +630,7 @@ export default function NewCaseDrawer() {
         </div>
 
         {/* Step Indicator */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
           <StepIndicator step={currentStep} />
         </div>
 
@@ -656,10 +661,10 @@ export default function NewCaseDrawer() {
         {/* Footer */}
         <div style={{
           padding: '16px 20px',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid var(--border-subtle)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           flexShrink: 0,
-          background: 'rgba(10,14,22,0.3)',
+          background: 'color-mix(in srgb, var(--scrim) 37.5%, transparent)',
         }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn-ghost btn-sm" onClick={closeDrawer}>Cancel</button>
@@ -675,7 +680,7 @@ export default function NewCaseDrawer() {
             <button
               className="btn-primary btn-sm glow-primary"
               onClick={closeDrawer}
-              style={{ background: '#059669', boxShadow: '0 0 12px rgba(5,150,105,0.4)' }}
+              style={{ background: 'var(--color-success)', boxShadow: '0 0 12px color-mix(in srgb, var(--color-success) 40%, transparent)' }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"/>

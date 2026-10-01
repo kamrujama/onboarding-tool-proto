@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTheme } from 'next-themes';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -24,6 +25,7 @@ import '@xyflow/react/dist/style.css';
 import { useApp } from '@/lib/appContext';
 import { mockCanvasNodes, mockProfiles, CanvasNode } from '@/lib/mockData';
 import WorkflowNode, { nodeStatusColors, typeIcons, WorkflowNodeData } from '@/components/canvas/WorkflowNode';
+import AppSelect from '@/components/ui/AppSelect';
 
 const nodeTypes = { workflowNode: WorkflowNode };
 
@@ -34,9 +36,9 @@ const EDGE_PAIRS: [string, string][] = [
 ];
 
 function edgeStyleForSourceStatus(status: CanvasNode['status'] | undefined) {
-  if (status === 'complete') return { stroke: 'rgba(52,211,153,0.6)', animated: false, dashed: false };
-  if (status === 'active') return { stroke: 'rgba(129,140,248,0.7)', animated: true, dashed: false };
-  return { stroke: 'rgba(148,146,168,0.5)', animated: false, dashed: true };
+  if (status === 'complete') return { stroke: 'color-mix(in srgb, var(--color-success) 60%, transparent)', animated: false, dashed: false };
+  if (status === 'active') return { stroke: 'color-mix(in srgb, var(--color-info) 70%, transparent)', animated: true, dashed: false };
+  return { stroke: 'color-mix(in srgb, var(--outline) 50%, transparent)', animated: false, dashed: true };
 }
 
 function buildInitialNodes(): Node<WorkflowNodeData>[] {
@@ -64,15 +66,19 @@ function buildInitialEdges(): Edge[] {
 }
 
 // Properties Panel
-function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: () => void }) {
+function PropertiesPanel({ node, onClose, onStatusChange }: {
+  node: CanvasNode | null;
+  onClose: () => void;
+  onStatusChange: (status: CanvasNode['status']) => void;
+}) {
   const sc = node ? nodeStatusColors[node.status] : nodeStatusColors.pending;
 
   return (
     <div style={{
       width: 320,
-      background: '#111827',
-      borderLeft: '1px solid rgba(255,255,255,0.1)',
-      boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
+      background: 'var(--surface-overlay)',
+      borderLeft: '1px solid var(--border-strong)',
+      boxShadow: '-8px 0 32px var(--scrim)',
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden', flexShrink: 0,
       transition: 'width 0.25s ease',
@@ -81,8 +87,8 @@ function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: 
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 16px',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(10,14,22,0.4)',
+        borderBottom: '1px solid var(--border-subtle)',
+        background: 'color-mix(in srgb, var(--scrim) 50%, transparent)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -134,7 +140,7 @@ function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 8,
-                  background: 'rgba(255,255,255,0.06)',
+                  background: 'color-mix(in srgb, var(--on-surface) 6%, transparent)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={sc.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -162,12 +168,17 @@ function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: 
               <div key={f.label}>
                 <div className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: 4 }}>{f.label}</div>
                 {f.label === 'Status' ? (
-                  <select className="input-base" style={{ height: 34, fontSize: 12 }} defaultValue={node.status}>
-                    <option value="complete">Complete</option>
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="blocked">Blocked</option>
-                  </select>
+                  <AppSelect
+                    value={node.status}
+                    onChange={v => onStatusChange(v as CanvasNode['status'])}
+                    searchable={false}
+                    options={[
+                      { value: 'complete', label: 'Complete' },
+                      { value: 'active', label: 'Active' },
+                      { value: 'pending', label: 'Pending' },
+                      { value: 'blocked', label: 'Blocked' },
+                    ]}
+                  />
                 ) : f.label === 'Owner' ? (
                   <input className="input-base" style={{ height: 34, fontSize: 12 }} defaultValue={f.value} />
                 ) : (
@@ -190,8 +201,8 @@ function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: 
               <textarea
                 style={{
                   width: '100%', padding: '8px 10px', borderRadius: 8,
-                  background: '#111827', border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#F8FAFC', fontSize: 12, fontFamily: 'var(--font-sans)',
+                  background: 'var(--surface-input)', border: '1px solid var(--border-strong)',
+                  color: 'var(--on-surface)', fontSize: 12, fontFamily: 'var(--font-sans)',
                   resize: 'vertical', minHeight: 72, outline: 'none',
                 }}
                 defaultValue={node.subtitle ?? ''}
@@ -235,6 +246,7 @@ function PropertiesPanel({ node, onClose }: { node: CanvasNode | null; onClose: 
 
 function CanvasContent() {
   const { setActiveView, selectedCanvasProfileId, selectedNodeId, setSelectedNodeId, propertiesPanelOpen, setPropertiesPanelOpen, openModal } = useApp();
+  const { resolvedTheme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>(buildInitialNodes());
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(buildInitialEdges());
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -246,8 +258,8 @@ function CanvasContent() {
   const onConnect: OnConnect = useCallback((connection: Connection) => {
     setEdges(eds => addEdge({
       ...connection,
-      markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(129,140,248,0.7)' },
-      style: { stroke: 'rgba(129,140,248,0.7)', strokeWidth: 1.5 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: 'color-mix(in srgb, var(--color-info) 70%, transparent)' },
+      style: { stroke: 'color-mix(in srgb, var(--color-info) 70%, transparent)', strokeWidth: 1.5 },
     }, eds));
   }, [setEdges]);
 
@@ -257,6 +269,13 @@ function CanvasContent() {
   }, [setSelectedNodeId, propertiesPanelOpen, setPropertiesPanelOpen]);
 
   const onPaneClick = useCallback(() => setSelectedNodeId(null), [setSelectedNodeId]);
+
+  const updateSelectedNodeStatus = useCallback((status: CanvasNode['status']) => {
+    if (!selectedNodeId) return;
+    setNodes(nds => nds.map(n => (
+      n.id === selectedNodeId ? { ...n, data: { node: { ...n.data.node, status } } } : n
+    )));
+  }, [selectedNodeId, setNodes]);
 
   const handleAddPhase = useCallback(() => {
     const id = `node-${Date.now()}`;
@@ -327,7 +346,7 @@ function CanvasContent() {
       {/* Canvas Workspace Header */}
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 10,
-        padding: '12px 0 10px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '12px 0 10px', borderBottom: '1px solid var(--border-subtle)',
         flexShrink: 0,
       }}>
         {/* Breadcrumb */}
@@ -378,10 +397,10 @@ function CanvasContent() {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 height: 20, padding: '0 8px', borderRadius: 9999,
-                background: 'rgba(5,150,105,0.12)', color: '#34D399',
-                border: '1px solid rgba(5,150,105,0.3)', fontSize: 11, fontWeight: 600,
+                background: 'color-mix(in srgb, var(--color-success) 12%, transparent)', color: 'var(--color-success)',
+                border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', fontSize: 11, fontWeight: 600,
               }}>
-                <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#34D399', display: 'inline-block' }} />
+                <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
                 Active Draft
               </span>
               <span className="text-code-tabular" style={{ padding: '2px 8px', borderRadius: 5, background: 'var(--surface-container-high)', color: 'var(--on-surface-variant)' }}>Account: {profile.account}</span>
@@ -402,7 +421,7 @@ function CanvasContent() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 4,
             background: 'var(--surface-container-lowest)', borderRadius: 10, padding: '4px',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid var(--border-subtle)',
           }}>
             {toolbarButtons.map(b => (
               <button
@@ -439,14 +458,14 @@ function CanvasContent() {
         <div
           style={{
             flex: 1, position: 'relative', overflow: 'hidden',
-            background: '#0c1017',
+            background: 'var(--surface-container-lowest)',
             borderRadius: propertiesPanelOpen ? '12px 0 0 12px' : 12,
-            border: '1px solid rgba(255,255,255,0.07)',
+            border: '1px solid var(--border-subtle)',
             transition: 'border-radius 0.25s',
           }}
         >
           <ReactFlow
-            className="dark"
+            colorMode={resolvedTheme === 'light' ? 'light' : 'dark'}
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
@@ -459,14 +478,14 @@ function CanvasContent() {
             minZoom={0.5}
             maxZoom={2}
             deleteKeyCode={['Backspace', 'Delete']}
-            connectionLineStyle={{ stroke: '#818CF8', strokeWidth: 1.5, strokeDasharray: '5 4' }}
+            connectionLineStyle={{ stroke: 'var(--color-info)', strokeWidth: 1.5, strokeDasharray: '5 4' }}
             defaultEdgeOptions={{
-              markerEnd: { type: MarkerType.ArrowClosed, color: 'rgba(148,146,168,0.5)' },
+              markerEnd: { type: MarkerType.ArrowClosed, color: 'color-mix(in srgb, var(--outline) 50%, transparent)' },
               style: { strokeWidth: 1.5 },
             }}
             proOptions={{ hideAttribution: true }}
           >
-            <Background variant={BackgroundVariant.Dots} gap={24} size={1.2} color="#c3c0ff" style={{ opacity: 0.25 }} />
+            <Background variant={BackgroundVariant.Dots} gap={24} size={1.2} color="var(--primary)" style={{ opacity: 0.25 }} />
             <MiniMap pannable zoomable style={{ background: 'var(--surface-container-lowest)' }} />
             <Controls showInteractive={false} />
           </ReactFlow>
@@ -475,15 +494,15 @@ function CanvasContent() {
           <div style={{
             position: 'absolute', bottom: 16, left: 16,
             display: 'flex', alignItems: 'center', gap: 12,
-            background: 'rgba(10,14,22,0.85)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--surface-header)', backdropFilter: 'blur(8px)',
+            border: '1px solid var(--border-subtle)',
             padding: '8px 14px', borderRadius: 9999,
             pointerEvents: 'none', zIndex: 5,
           }}>
             {[
-              { label: 'Complete', dot: '#34D399' },
-              { label: 'Active', dot: '#818CF8' },
-              { label: 'Pending', dot: '#464555' },
+              { label: 'Complete', dot: 'var(--color-success)' },
+              { label: 'Active', dot: 'var(--color-info)' },
+              { label: 'Pending', dot: 'var(--outline-variant)' },
             ].map(l => (
               <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: l.dot, flexShrink: 0 }} />
@@ -500,10 +519,10 @@ function CanvasContent() {
               style={{
                 position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
                 width: 32, height: 80, borderRadius: '8px 0 0 8px',
-                background: 'var(--surface-container-high)', border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--surface-container-high)', border: '1px solid var(--border-strong)',
                 borderRight: 'none', cursor: 'pointer', color: 'var(--on-surface-variant)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '-4px 0 12px rgba(0,0,0,0.4)',
+                boxShadow: '-4px 0 12px color-mix(in srgb, var(--scrim) 50%, transparent)',
                 zIndex: 5,
               }}
             >
@@ -519,6 +538,7 @@ function CanvasContent() {
           <PropertiesPanel
             node={selectedNode}
             onClose={() => setPropertiesPanelOpen(false)}
+            onStatusChange={updateSelectedNodeStatus}
           />
         )}
       </div>

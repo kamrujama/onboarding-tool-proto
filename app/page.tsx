@@ -12,7 +12,7 @@ import NewCaseDrawer from '@/components/drawers/NewCaseDrawer';
 import ProfileModal from '@/components/modals/ProfileModal';
 
 function AppShell() {
-  const { activeView } = useApp();
+  const { activeView, sidebarWidth } = useApp();
 
   const isCanvas = activeView === 'admin-canvas';
 
@@ -23,12 +23,13 @@ function AppShell() {
 
       {/* Main content area */}
       <div style={{
-        marginLeft: 240,
+        marginLeft: sidebarWidth,
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
         background: 'var(--surface)',
+        transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}>
         {/* TopBar */}
         <TopBar />

@@ -4,10 +4,10 @@ import { useApp } from '@/lib/appContext';
 import { mockCases, dashboardStats } from '@/lib/mockData';
 
 const statusColors: Record<string, { bg: string; text: string; border: string; dot: string }> = {
-  active:    { bg: 'rgba(5,150,105,0.12)',  text: '#34D399', border: 'rgba(5,150,105,0.3)',   dot: '#34D399' },
-  blocked:   { bg: 'rgba(220,38,38,0.12)',  text: '#F87171', border: 'rgba(220,38,38,0.35)',  dot: '#F87171' },
-  attention: { bg: 'rgba(217,119,6,0.12)',  text: '#FBBF24', border: 'rgba(217,119,6,0.3)',   dot: '#FBBF24' },
-  completed: { bg: 'rgba(5,150,105,0.12)',  text: '#34D399', border: 'rgba(5,150,105,0.3)',   dot: '#34D399' },
+  active:    { bg: 'color-mix(in srgb, var(--color-success) 12%, transparent)', text: 'var(--color-success)', border: 'color-mix(in srgb, var(--color-success) 30%, transparent)', dot: 'var(--color-success)' },
+  blocked:   { bg: 'color-mix(in srgb, var(--color-danger) 12%, transparent)',  text: 'var(--color-danger)',  border: 'color-mix(in srgb, var(--color-danger) 35%, transparent)',  dot: 'var(--color-danger)' },
+  attention: { bg: 'color-mix(in srgb, var(--color-warning) 12%, transparent)', text: 'var(--color-warning)', border: 'color-mix(in srgb, var(--color-warning) 30%, transparent)', dot: 'var(--color-warning)' },
+  completed: { bg: 'color-mix(in srgb, var(--color-success) 12%, transparent)', text: 'var(--color-success)', border: 'color-mix(in srgb, var(--color-success) 30%, transparent)', dot: 'var(--color-success)' },
 };
 
 const statusLabel: Record<string, string> = {
@@ -35,9 +35,9 @@ function StatCard({ label, value, sub, color }: { label: string; value: number; 
     <div style={{
       flex: 1, minWidth: 140,
       background: 'var(--surface-container-low)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      border: '1px solid var(--border-subtle)',
       borderRadius: 12, padding: '16px 20px',
-      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+      boxShadow: 'inset 0 1px 0 var(--border-subtle)',
     }}>
       <div className="text-label-sm" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -55,7 +55,7 @@ function ProgressBar({ value, total }: { value: number; total: number }) {
       <div style={{ flex: 1, height: 4, background: 'var(--surface-container-high)', borderRadius: 9999, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
-          background: 'linear-gradient(90deg, #4F46E5, #818CF8)',
+          background: 'linear-gradient(90deg, var(--primary-container), var(--color-info))',
           borderRadius: 9999, transition: 'width 0.3s',
         }} />
       </div>
@@ -101,24 +101,24 @@ export default function DashboardView() {
       {/* Stats Row */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <StatCard label="Total Cases"  value={dashboardStats.total}     sub="All time" />
-        <StatCard label="Active"       value={dashboardStats.active}    color="#818CF8" />
-        <StatCard label="Attention"    value={dashboardStats.attention} color="#FBBF24" />
-        <StatCard label="Blocked"      value={dashboardStats.blocked}   color="#F87171" />
-        <StatCard label="Completed"    value={dashboardStats.completed} color="#34D399" />
+        <StatCard label="Active"       value={dashboardStats.active}    color="var(--color-info)" />
+        <StatCard label="Attention"    value={dashboardStats.attention} color="var(--color-warning)" />
+        <StatCard label="Blocked"      value={dashboardStats.blocked}   color="var(--color-danger)" />
+        <StatCard label="Completed"    value={dashboardStats.completed} color="var(--color-success)" />
         <StatCard label="Avg. Days"    value={dashboardStats.avgDays}   sub="to onboard" />
       </div>
 
       {/* Active Cases Table */}
       <div style={{
         background: 'var(--surface-container-low)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: 16, overflow: 'hidden',
-        boxShadow: '0 4px 20px -2px rgba(0,0,0,0.5)',
+        boxShadow: 'var(--shadow-md)',
       }}>
         {/* Table Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+          padding: '16px 20px', borderBottom: '1px solid var(--border-subtle)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -128,7 +128,7 @@ export default function DashboardView() {
             <span className="text-headline-sm" style={{ color: 'var(--on-surface)' }}>Active Cases</span>
             <span style={{
               height: 20, padding: '0 8px', borderRadius: 9999,
-              background: 'rgba(79,70,229,0.15)', color: '#818CF8',
+              background: 'color-mix(in srgb, var(--primary-container) 15%, transparent)', color: 'var(--color-info)',
               fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center',
             }}>{mockCases.length}</span>
           </div>
@@ -178,9 +178,9 @@ export default function DashboardView() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(79,70,229,0.2)',
+                background: 'color-mix(in srgb, var(--primary-container) 20%, transparent)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#818CF8', fontWeight: 700, fontSize: 11,
+                color: 'var(--color-info)', fontWeight: 700, fontSize: 11,
               }}>{c.initials}</div>
               <div>
                 <div className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{c.name}</div>
@@ -195,13 +195,13 @@ export default function DashboardView() {
             {/* Start Date */}
             <div>
               <div className="text-body-sm" style={{ color: 'var(--on-surface)' }}>{c.startDate}</div>
-              <div className="text-code-tabular" style={{ color: c.daysLeft <= 7 ? '#FBBF24' : 'var(--on-surface-variant)' }}>
+              <div className="text-code-tabular" style={{ color: c.daysLeft <= 7 ? 'var(--color-warning)' : 'var(--on-surface-variant)' }}>
                 {c.daysLeft}d left
               </div>
             </div>
             {/* Stage */}
             <div>
-              <span className="text-label-md" style={{ color: '#818CF8' }}>{c.stage}</span>
+              <span className="text-label-md" style={{ color: 'var(--color-info)' }}>{c.stage}</span>
             </div>
             {/* Progress */}
             <ProgressBar value={c.stageIndex} total={c.totalStages} />
@@ -213,8 +213,8 @@ export default function DashboardView() {
 
       {/* Quick Actions Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(79,70,229,0.12) 0%, rgba(37,99,235,0.08) 100%)',
-        border: '1px solid rgba(79,70,229,0.2)',
+        background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-container) 12%, transparent) 0%, color-mix(in srgb, var(--secondary-container) 8%, transparent) 100%)',
+        border: '1px solid color-mix(in srgb, var(--primary-container) 20%, transparent)',
         borderRadius: 16, padding: '20px 24px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
       }}>

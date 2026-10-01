@@ -1,9 +1,10 @@
 'use client';
 
 import { useApp } from '@/lib/appContext';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function TopBar() {
-  const { openDrawer, activeView } = useApp();
+  const { openDrawer, activeView, sidebarWidth } = useApp();
 
   const getTitle = () => {
     switch (activeView) {
@@ -18,12 +19,13 @@ export default function TopBar() {
 
   return (
     <header style={{
-      position: 'fixed', top: 0, left: 240, right: 0, height: 64, zIndex: 39,
-      background: 'rgba(10,14,22,0.85)',
+      position: 'fixed', top: 0, left: sidebarWidth, right: 0, height: 64, zIndex: 39,
+      background: 'var(--surface-header)',
       backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      borderBottom: '1px solid var(--border-subtle)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 24px',
+      transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)',
     }}>
       {/* Search */}
       <div style={{ position: 'relative', flex: 1, maxWidth: 440 }}>
@@ -81,8 +83,11 @@ export default function TopBar() {
           }} />
         </button>
 
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Avatar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 8, borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 8, borderLeft: '1px solid var(--border-subtle)' }}>
           <div style={{ textAlign: 'right' }}>
             <div className="text-label-md" style={{ color: 'var(--on-surface)', lineHeight: '1.2' }}>OT</div>
             <div className="text-label-sm" style={{ color: 'var(--on-surface-variant)' }}>Onboarding Team</div>

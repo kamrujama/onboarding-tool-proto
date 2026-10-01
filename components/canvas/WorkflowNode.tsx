@@ -4,10 +4,10 @@ import { Handle, Position, NodeProps, Node } from '@xyflow/react';
 import { CanvasNode } from '@/lib/mockData';
 
 export const nodeStatusColors: Record<string, { bg: string; border: string; accent: string; dot: string }> = {
-  complete: { bg: 'rgba(5,150,105,0.15)',  border: 'rgba(52,211,153,0.4)',  accent: '#34D399', dot: '#34D399' },
-  active:   { bg: 'rgba(79,70,229,0.2)',   border: 'rgba(129,140,248,0.5)', accent: '#818CF8', dot: '#818CF8' },
-  pending:  { bg: 'rgba(30,41,59,0.8)',    border: 'rgba(70,69,85,0.6)',    accent: '#64748B', dot: '#464555' },
-  blocked:  { bg: 'rgba(220,38,38,0.15)',  border: 'rgba(248,113,113,0.4)', accent: '#F87171', dot: '#F87171' },
+  complete: { bg: 'color-mix(in srgb, var(--color-success) 15%, transparent)', border: 'color-mix(in srgb, var(--color-success) 40%, transparent)', accent: 'var(--color-success)', dot: 'var(--color-success)' },
+  active:   { bg: 'color-mix(in srgb, var(--color-info) 20%, transparent)',    border: 'color-mix(in srgb, var(--color-info) 50%, transparent)',    accent: 'var(--color-info)',    dot: 'var(--color-info)' },
+  pending:  { bg: 'var(--surface-container-high)',                            border: 'var(--border-strong)',                                       accent: 'var(--text-faint)',     dot: 'var(--text-muted)' },
+  blocked:  { bg: 'color-mix(in srgb, var(--color-danger) 15%, transparent)',  border: 'color-mix(in srgb, var(--color-danger) 40%, transparent)',  accent: 'var(--color-danger)',   dot: 'var(--color-danger)' },
 };
 
 export const typeIcons: Record<string, string> = {
@@ -28,14 +28,14 @@ export default function WorkflowNode({ data, selected }: NodeProps<Node<Workflow
       style={{
         width: 180,
         background: sc.bg,
-        border: `1.5px solid ${selected ? '#4F46E5' : sc.border}`,
+        border: `1.5px solid ${selected ? 'var(--primary-container)' : sc.border}`,
         borderRadius: 12,
         padding: '12px 14px',
         cursor: 'pointer',
         userSelect: 'none',
         boxShadow: selected
-          ? '0 0 0 2px rgba(79,70,229,0.4), 0 8px 24px rgba(0,0,0,0.6)'
-          : '0 4px 16px rgba(0,0,0,0.5)',
+          ? '0 0 0 2px color-mix(in srgb, var(--primary-container) 40%, transparent), 0 8px 24px var(--scrim)'
+          : 'var(--shadow-sm)',
         transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
         transform: selected ? 'translateY(-2px)' : 'none',
       }}
@@ -43,14 +43,14 @@ export default function WorkflowNode({ data, selected }: NodeProps<Node<Workflow
       <Handle
         type="target"
         position={Position.Left}
-        style={{ width: 9, height: 9, background: sc.accent, border: '1.5px solid #0c1017' }}
+        style={{ width: 9, height: 9, background: sc.accent, border: '1.5px solid var(--surface-container-lowest)' }}
       />
 
       {/* Type icon + status dot */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <div style={{
           width: 28, height: 28, borderRadius: 7,
-          background: 'rgba(255,255,255,0.06)',
+          background: 'color-mix(in srgb, var(--on-surface) 6%, transparent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sc.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -83,7 +83,7 @@ export default function WorkflowNode({ data, selected }: NodeProps<Node<Workflow
       <Handle
         type="source"
         position={Position.Right}
-        style={{ width: 9, height: 9, background: sc.accent, border: '1.5px solid #0c1017' }}
+        style={{ width: 9, height: 9, background: sc.accent, border: '1.5px solid var(--surface-container-lowest)' }}
       />
     </div>
   );

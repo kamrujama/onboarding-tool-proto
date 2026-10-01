@@ -2,7 +2,7 @@
 
 import { mockCases } from '@/lib/mockData';
 
-const stageColors = ['#4F46E5','#818CF8','#2563EB','#34D399','#FBBF24','#F87171','#68dba9','#b4c5ff','#c3c0ff'];
+const stageColors = ['var(--primary-container)','var(--color-info)','var(--secondary-container)','var(--color-success)','var(--color-warning)','var(--color-danger)','var(--tertiary)','var(--secondary)','var(--primary)'];
 
 function MilestoneTrack({ current, total, stage }: { current: number; total: number; stage: string }) {
   return (
@@ -16,9 +16,9 @@ function MilestoneTrack({ current, total, stage }: { current: number; total: num
             height: 8,
             borderRadius: 9999,
             background: i + 1 < current
-              ? '#34D399'
+              ? 'var(--color-success)'
               : i + 1 === current
-                ? '#4F46E5'
+                ? 'var(--primary-container)'
                 : 'var(--surface-container-highest)',
             transition: 'all 0.2s',
           }}
@@ -63,27 +63,27 @@ export default function ActiveView() {
       {/* Cards Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
         {mockCases.map(c => {
-          const statusColor = c.status === 'active' ? '#34D399' : c.status === 'blocked' ? '#F87171' : '#FBBF24';
-          const statusBg = c.status === 'active' ? 'rgba(5,150,105,0.12)' : c.status === 'blocked' ? 'rgba(220,38,38,0.12)' : 'rgba(217,119,6,0.12)';
-          const statusBorder = c.status === 'active' ? 'rgba(5,150,105,0.3)' : c.status === 'blocked' ? 'rgba(220,38,38,0.35)' : 'rgba(217,119,6,0.3)';
+          const statusColor = c.status === 'active' ? 'var(--color-success)' : c.status === 'blocked' ? 'var(--color-danger)' : 'var(--color-warning)';
+          const statusBg = c.status === 'active' ? 'color-mix(in srgb, var(--color-success) 12%, transparent)' : c.status === 'blocked' ? 'color-mix(in srgb, var(--color-danger) 12%, transparent)' : 'color-mix(in srgb, var(--color-warning) 12%, transparent)';
+          const statusBorder = c.status === 'active' ? 'color-mix(in srgb, var(--color-success) 30%, transparent)' : c.status === 'blocked' ? 'color-mix(in srgb, var(--color-danger) 35%, transparent)' : 'color-mix(in srgb, var(--color-warning) 30%, transparent)';
 
           return (
             <div key={c.id} style={{
               background: 'var(--surface-container-low)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              border: '1px solid var(--border-subtle)',
               borderRadius: 14,
               padding: '18px 20px',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)',
+              boxShadow: 'inset 0 1px 0 var(--border-subtle), var(--shadow-sm)',
               cursor: 'pointer',
               transition: 'border-color 0.15s, box-shadow 0.15s',
             }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(195,192,255,0.2)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)';
+                (e.currentTarget as HTMLDivElement).style.borderColor = 'color-mix(in srgb, var(--primary) 20%, transparent)';
+                (e.currentTarget as HTMLDivElement).style.boxShadow = 'inset 0 1px 0 var(--border-strong), var(--shadow-md)';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)';
+                (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-subtle)';
+                (e.currentTarget as HTMLDivElement).style.boxShadow = 'inset 0 1px 0 var(--border-subtle), var(--shadow-sm)';
               }}
             >
               {/* Top row */}
@@ -91,9 +91,9 @@ export default function ActiveView() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
                     width: 36, height: 36, borderRadius: '50%',
-                    background: 'rgba(79,70,229,0.2)',
+                    background: 'color-mix(in srgb, var(--primary-container) 20%, transparent)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#818CF8', fontWeight: 700, fontSize: 12, flexShrink: 0,
+                    color: 'var(--color-info)', fontWeight: 700, fontSize: 12, flexShrink: 0,
                   }}>{c.initials}</div>
                   <div>
                     <div className="text-label-lg" style={{ color: 'var(--on-surface)' }}>{c.name}</div>
@@ -130,7 +130,7 @@ export default function ActiveView() {
               {/* Stage + Progress */}
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span className="text-body-sm" style={{ color: '#818CF8' }}>Stage: {c.stage}</span>
+                  <span className="text-body-sm" style={{ color: 'var(--color-info)' }}>Stage: {c.stage}</span>
                   <span className="text-code-tabular" style={{ color: 'var(--on-surface-variant)' }}>{c.stageIndex}/{c.totalStages}</span>
                 </div>
                 <MilestoneTrack current={c.stageIndex} total={c.totalStages} stage={c.stage} />
@@ -138,7 +138,7 @@ export default function ActiveView() {
 
               {/* SLA */}
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <span className="text-code-tabular" style={{ color: c.daysLeft <= 7 ? '#FBBF24' : 'var(--on-surface-variant)' }}>
+                <span className="text-code-tabular" style={{ color: c.daysLeft <= 7 ? 'var(--color-warning)' : 'var(--on-surface-variant)' }}>
                   {c.daysLeft}d until start
                 </span>
               </div>
